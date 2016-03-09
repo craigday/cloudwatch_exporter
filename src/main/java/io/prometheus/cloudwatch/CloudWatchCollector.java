@@ -1,5 +1,6 @@
 package io.prometheus.cloudwatch;
 
+import com.amazonaws.ClientConfiguration;
 import com.amazonaws.services.cloudwatch.AmazonCloudWatchClient;
 import com.amazonaws.services.cloudwatch.model.Datapoint;
 import com.amazonaws.services.cloudwatch.model.Dimension;
@@ -83,8 +84,21 @@ public class CloudWatchCollector extends Collector {
         }
 
         if (client == null) {
-          this.client = new AmazonCloudWatchClient();
-          this.client.setEndpoint("https://monitoring." + region + ".amazonaws.com");
+            ClientConfiguration clientConfiguration = new ClientConfiguration();
+            if (config.containsKey("proxy_host")) {
+                clientConfiguration.setProxyHost((String) config.get("proxy_host"));
+            }
+            if (config.containsKey("proxy_port")) {
+                clientConfiguration.setProxyPort(((Number) config.get("proxy_port")).intValue());
+            }
+            if (config.containsKey("proxy_username")) {
+                clientConfiguration.setProxyUsername((String) config.get("proxy_username"));
+            }
+            if (config.containsKey("proxy_password")) {
+                clientConfiguration.setProxyPassword((String) config.get("proxy_password"));
+            }
+            this.client = new AmazonCloudWatchClient(clientConfiguration);
+            this.client.setEndpoint("https://monitoring." + region + ".amazonaws.com");
         } else {
           this.client = client;
         }
